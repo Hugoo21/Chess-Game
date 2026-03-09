@@ -5,6 +5,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.*;
+import javax.imageio.*;
 import java.util.Observable;
 import java.util.Observer;
 
