@@ -1,4 +1,6 @@
 package Model;
 
-public interface Piece {
+public class Piece
+{
+
 }
