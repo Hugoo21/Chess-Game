@@ -1,26 +1,78 @@
 package Model;
 
+import java.util.List;
 import java.util.Observable;
 
-public class Game extends Observable
-{
+@SuppressWarnings("deprecation")
+public class Game extends Observable {
 
+    private final Board board = new Board();
     private int[] selectedCell = null;
+    private boolean whiteTurn = true;
 
     public void leftClick(int row, int col) {
-        if (selectedCell != null && selectedCell[0] == row && selectedCell[1] == col)
-        {
-            selectedCell = null;
+        Piece clicked = board.getPiece(row, col);
+
+        if (selectedCell == null) {
+            // Sélectionner une pièce du bon camp
+            if (clicked != null && clicked.getCouleur() == whiteTurn) {
+                selectedCell = new int[]{row, col};
+            }
+        } else {
+            int selRow = selectedCell[0], selCol = selectedCell[1];
+
+            if (selRow == row && selCol == col) {
+                // Désélectionner
+                selectedCell = null;
+            } else if (clicked != null && clicked.getCouleur() == whiteTurn) {
+                // Changer de pièce sélectionnée
+                selectedCell = new int[]{row, col};
+            } else {
+                // Tentative de déplacement
+                boolean moved = board.movePiece(selRow, selCol, row, col);
+                if (moved) {
+                    whiteTurn = !whiteTurn;
+                    selectedCell = null;
+                } else {
+                    selectedCell = null; // coup invalide → désélectionner
+                }
+            }
         }
-        else
-        {
-            selectedCell = new int[]{row, col};
-        }
-        synchronized (this)
-        {
+
+        publish();
+    }
+
+    private void publish() {
+        List<int[]> legalMoves = (selectedCell == null)
+                ? List.of()
+                : board.getCoupsLegaux(selectedCell[0], selectedCell[1]);
+
+        String status = buildStatus();
+
+        GameState state = new GameState(
+                board.buildSnapshot(),
+                selectedCell,
+                legalMoves,
+                whiteTurn,
+                status
+        );
+
+        synchronized (this) {
             setChanged();
-            notifyObservers(selectedCell);
+            notifyObservers(state);
         }
     }
-}
 
+    private String buildStatus() {
+        if (board.isCheckmate(whiteTurn)) {
+            return (whiteTurn ? "Noirs" : "Blancs") + " gagnent ! Échec et mat.";
+        }
+        if (board.isKingInCheck(whiteTurn)) {
+            return (whiteTurn ? "Blancs" : "Noirs") + " : Échec au roi !";
+        }
+        return (whiteTurn ? "Blancs" : "Noirs") + " jouent.";
+    }
+
+    /** Appelé au démarrage pour afficher l'état initial */
+    public void init() { publish(); }
+}

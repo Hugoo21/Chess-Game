@@ -1,13 +1,12 @@
-import VueController.*;
-import javax.swing.*;
+import VueController.MainWindow;
 import Model.Game;
+import javax.swing.SwingUtilities;
 
-public class Main
-{
-    public static void main(String[] args)
-    {
-        Game game = new Game();
-        MainWindow window = new MainWindow(game);
-        game.addObserver(window);
+public class Main {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            Game leJeu = new Game();
+            new MainWindow(leJeu);
+        });
     }
 }
