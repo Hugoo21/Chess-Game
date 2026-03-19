@@ -10,9 +10,9 @@ import java.util.Observable;
 import java.util.Observer;
 
 @SuppressWarnings("deprecation")
-public class MainWindow extends JFrame implements Observer {
+public class MainWindow extends JFrame implements Observer
+{
 
-    // ── Couleurs ──────────────────────────────────────────────────────────────
     private static final Color LIGHT_SQUARE   = new Color(240, 217, 181);
     private static final Color DARK_SQUARE    = new Color(181, 136,  99);
     private static final Color SELECTED_COLOR = new Color( 20, 160,  20, 200);
@@ -24,7 +24,8 @@ public class MainWindow extends JFrame implements Observer {
     private final JLabel[][] pieceLabels = new JLabel[8][8];
     private final JLabel statusLabel = new JLabel("", SwingConstants.CENTER);
 
-    public MainWindow(Game game) {
+    public MainWindow(Game game)
+    {
         super("Chess Game");
         this.game = game;
 
@@ -33,10 +34,11 @@ public class MainWindow extends JFrame implements Observer {
         this.setSize(640, 680);
         this.setLocationRelativeTo(null);
 
-        // Panneau d'échiquier
         JPanel gridPanel = new JPanel(new GridLayout(8, 8));
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        for (int row = 0; row < 8; row++)
+        {
+            for (int col = 0; col < 8; col++)
+            {
                 JPanel square = new JPanel(new BorderLayout());
                 square.setBackground(baseColor(row, col));
 
@@ -58,7 +60,6 @@ public class MainWindow extends JFrame implements Observer {
             }
         }
 
-        // Barre de statut
         statusLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
         statusLabel.setOpaque(true);
         statusLabel.setBackground(new Color(50, 50, 50));
@@ -69,40 +70,49 @@ public class MainWindow extends JFrame implements Observer {
         this.add(statusLabel, BorderLayout.SOUTH);
 
         game.addObserver(this);
-        game.init();           // déclenche le premier affichage
+        game.init();
 
         this.setVisible(true);
     }
 
-    // ── Observer ─────────────────────────────────────────────────────────────
 
     @Override
-    public void update(Observable o, Object arg) {
-        if (!(arg instanceof GameState state)) return;
+    public void update(Observable o, Object arg)
+    {
+        if (!(arg instanceof GameState state))
+        {
+            return;
+        }
 
         SwingUtilities.invokeLater(() -> {
             int[] selected = state.getSelectedCell();
             List<int[]> legalMoves = state.getLegalMoves();
 
-            for (int row = 0; row < 8; row++) {
-                for (int col = 0; col < 8; col++) {
+            for (int row = 0; row < 8; row++)
+            {
+                for (int col = 0; col < 8; col++)
+                {
                     JPanel square = tab[row][col];
                     JLabel label  = pieceLabels[row][col];
 
-                    // Couleur de fond
                     Color bg = baseColor(row, col);
-                    if (selected != null && selected[0] == row && selected[1] == col) {
+                    if (selected != null && selected[0] == row && selected[1] == col)
+                    {
                         bg = SELECTED_COLOR;
-                    } else if (isLegalMove(legalMoves, row, col)) {
+                    }
+                    else if (isLegalMove(legalMoves, row, col))
+                    {
                         bg = LEGAL_COLOR;
                     }
                     square.setBackground(bg);
 
-                    // Pièce
                     GameState.CellInfo cell = state.getCell(row, col);
-                    if (cell == null) {
+                    if (cell == null)
+                    {
                         label.setText("");
-                    } else {
+                    }
+                    else
+                    {
                         label.setText(cell.pieceSymbol);
                         label.setForeground(cell.isWhite ? Color.WHITE : Color.BLACK);
                     }
@@ -115,14 +125,25 @@ public class MainWindow extends JFrame implements Observer {
         });
     }
 
-    // ── Utilitaires ───────────────────────────────────────────────────────────
 
     private Color baseColor(int row, int col) {
-        return (row + col) % 2 == 0 ? LIGHT_SQUARE : DARK_SQUARE;
+        if ((row + col) % 2 == 0)
+        {
+            return LIGHT_SQUARE;
+        }
+        else
+        {
+            return DARK_SQUARE;
+        }
     }
 
-    private boolean isLegalMove(List<int[]> moves, int row, int col) {
-        if (moves == null) return false;
+    private boolean isLegalMove(List<int[]> moves, int row, int col)
+    {
+        if (moves == null)
+        {
+            return false;
+        }
+
         return moves.stream().anyMatch(m -> m[0] == row && m[1] == col);
     }
 }

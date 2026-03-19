@@ -2,6 +2,7 @@ package Model;
 
 import java.util.List;
 
-public interface CalculateurMouvement {
+public interface CalculateurMouvement
+{
     List<int[]> getcoup(int row, int col, Piece[][] board, boolean isBlanc);
 }
