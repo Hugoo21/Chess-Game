@@ -4,37 +4,49 @@ import java.util.List;
 import java.util.Observable;
 
 @SuppressWarnings("deprecation")
-public class Game extends Observable {
+public class Game extends Observable
+{
 
     private final Board board = new Board();
     private int[] selectedCell = null;
     private boolean whiteTurn = true;
 
-    public void leftClick(int row, int col) {
+    public void leftClick(int row, int col)
+    {
         Piece clicked = board.getPiece(row, col);
 
-        if (selectedCell == null) {
+        if (selectedCell == null)
+        {
             // Sélectionner une pièce du bon camp
-            if (clicked != null && clicked.getCouleur() == whiteTurn) {
+            if (clicked != null && clicked.getCouleur() == whiteTurn)
+            {
                 selectedCell = new int[]{row, col};
             }
-        } else {
+        }
+        else
+        {
             int selRow = selectedCell[0], selCol = selectedCell[1];
 
-            if (selRow == row && selCol == col) {
-                // Désélectionner
+            if (selRow == row && selCol == col)
+            {
                 selectedCell = null;
-            } else if (clicked != null && clicked.getCouleur() == whiteTurn) {
-                // Changer de pièce sélectionnée
+            }
+            else if (clicked != null && clicked.getCouleur() == whiteTurn)
+            {
                 selectedCell = new int[]{row, col};
-            } else {
+            }
+            else
+            {
                 // Tentative de déplacement
                 boolean moved = board.movePiece(selRow, selCol, row, col);
-                if (moved) {
+                if (moved)
+                {
                     whiteTurn = !whiteTurn;
                     selectedCell = null;
-                } else {
-                    selectedCell = null; // coup invalide → désélectionner
+                }
+                else
+                {
+                    selectedCell = null; // coup invalide
                 }
             }
         }
@@ -42,7 +54,8 @@ public class Game extends Observable {
         publish();
     }
 
-    private void publish() {
+    private void publish()
+    {
         List<int[]> legalMoves = (selectedCell == null)
                 ? List.of()
                 : board.getCoupsLegaux(selectedCell[0], selectedCell[1]);
@@ -57,22 +70,29 @@ public class Game extends Observable {
                 status
         );
 
-        synchronized (this) {
+        synchronized (this)
+        {
             setChanged();
             notifyObservers(state);
         }
     }
 
-    private String buildStatus() {
-        if (board.isCheckmate(whiteTurn)) {
+    private String buildStatus()
+    {
+        if (board.isCheckmate(whiteTurn))
+        {
             return (whiteTurn ? "Noirs" : "Blancs") + " gagnent ! Échec et mat.";
         }
-        if (board.isKingInCheck(whiteTurn)) {
+        if (board.isKingInCheck(whiteTurn))
+        {
             return (whiteTurn ? "Blancs" : "Noirs") + " : Échec au roi !";
         }
         return (whiteTurn ? "Blancs" : "Noirs") + " jouent.";
     }
 
     /** Appelé au démarrage pour afficher l'état initial */
-    public void init() { publish(); }
+    public void init()
+    {
+        publish();
+    }
 }
