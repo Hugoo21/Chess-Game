@@ -1,26 +1,17 @@
-package Model;
+package Model.DCA;
 
-import java.util.ArrayList;
+import Model.Piece.Piece;
+
 import java.util.List;
 
-public class Tour extends Piece
-{
+public class MouvementDroit extends DecorateurMouvement {
 
-    public Tour(boolean isBlanc)
-    {
-        super(isBlanc, "Tour");
-    }
+    public MouvementDroit(CalculateurMouvement m) { super(m); }
 
     @Override
-    public String getSymbol()
-    {
-        return isBlanc ? "♖" : "♜";
-    }
+    public List<int[]> getCoups(int row, int col, Piece[][] board, boolean isBlanc) {
+        List<int[]> coups = super.getCoups(row, col, board, isBlanc);
 
-    @Override
-    public List<int[]> coupsPossibles(int row, int col, Piece[][] board)
-    {
-        List<int[]> moves = new ArrayList<>();
         int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
         for (int[] d : dirs)
         {
@@ -33,18 +24,18 @@ public class Tour extends Piece
                 }
                 if (board[r][c] == null)
                 {
-                    moves.add(new int[]{r, c});
+                    coups.add(new int[]{r, c});
                 }
                 else
                 {
                     if (board[r][c].getCouleur() != isBlanc)
                     {
-                        moves.add(new int[]{r, c});
+                        coups.add(new int[]{r, c});
                     }
                     break;
                 }
             }
         }
-        return moves;
+        return coups;
     }
 }

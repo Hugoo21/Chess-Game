@@ -1,26 +1,22 @@
-package Model;
+package Model.DCA;
+
+import Model.Piece.Piece;
+import Model.Piece.Tour;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Roi extends Piece
-{
-
-    public Roi(boolean isBlanc)
+public class MouvementDeRoi extends DecorateurMouvement{
+    public MouvementDeRoi(CalculateurMouvement m)
     {
-        super(isBlanc, "Roi");
+        super(m);
+
     }
 
     @Override
-    public String getSymbol()
+    public List<int[]> getCoups(int row, int col, Piece[][] board, boolean isBlanc)
     {
-        return isBlanc ? "♔" : "♚";
-    }
-
-    @Override
-    public List<int[]> coupsPossibles(int row, int col, Piece[][] board)
-    {
-        List<int[]> moves = new ArrayList<>();
+        List<int[]> coups = new ArrayList<>();
         for (int dr = -1; dr <= 1; dr++)
         {
             for (int dc = -1; dc <= 1; dc++)
@@ -31,34 +27,35 @@ public class Roi extends Piece
                 {
                     if (board[r][c] == null || board[r][c].getCouleur() != isBlanc)
                     {
-                        moves.add(new int[]{r, c});
+                        coups.add(new int[]{r, c});
                     }
                 }
             }
         }
-        if (!this.alreadyMoved)
+        Piece imKing = board[row][col];
+        if (!imKing.isAlreadyMoved())
         {
             Piece tourDroite = board[row][7];
             Piece tourGauche = board[row][0];
 
             //petit Roque
-            if (tourDroite instanceof Tour && !tourDroite.alreadyMoved)
+            if (tourDroite instanceof Tour && !tourDroite.isAlreadyMoved())
             {
                 if (board[row][5] == null && board[row][6] == null)
                 {
-                    moves.add(new int[]{row, col + 2});
+                    coups.add(new int[]{row, col + 2});
                 }
             }
             //grand Roque
-            if (tourGauche instanceof Tour && !tourGauche.alreadyMoved)
+            if (tourGauche instanceof Tour && !tourGauche.isAlreadyMoved())
             {
                 if (board[row][1] == null && board[row][2] == null && board[row][3] == null)
                 {
-                    moves.add(new int[]{row, col - 2});
+                    coups.add(new int[]{row, col - 2});
                 }
             }
 
         }
-        return moves;
+        return coups;
     }
 }

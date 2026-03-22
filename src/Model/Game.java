@@ -1,5 +1,7 @@
 package Model;
 
+import Model.Piece.Piece;
+
 import java.util.List;
 import java.util.Observable;
 
