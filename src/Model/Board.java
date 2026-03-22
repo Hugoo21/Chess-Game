@@ -1,5 +1,7 @@
 package Model;
 
+import Model.Piece.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,7 +64,7 @@ public class Board
 
         for (int[] mv : candidats)
         {
-            if (!metEnEchec(row, col, mv[0], mv[1], piece.getCouleur()))
+            if (!putInCheck(row, col, mv[0], mv[1], piece.getCouleur()))
             {
                 legaux.add(mv);
             }
@@ -70,7 +72,7 @@ public class Board
         return legaux;
     }
 
-    private boolean metEnEchec(int fromR, int fromC, int toR, int toC, boolean couleur)
+    private boolean putInCheck(int fromR, int fromC, int toR, int toC, boolean couleur)
     {
         // Sauvegarde
         Piece moving = grid[fromR][fromC];
@@ -156,9 +158,12 @@ public class Board
         }
 
         // Roque
-        Piece moved = grid[fromR][fromC];
+        Piece pieceMoved = grid[fromR][fromC];
+        System.out.println("--- DÉBUG MOUVEMENT ---");
+        System.out.println("Pièce : " + pieceMoved.getNom());
+        System.out.println("Déjà bougé (AVANT) : " + pieceMoved.isAlreadyMoved());
 
-        if (moved instanceof Roi && Math.abs(toC - fromC) >= 2 )
+        if (pieceMoved instanceof Roi && Math.abs(toC - fromC) >= 2 )
         {
             int colTourDepart;
             int colTourArrivee;
@@ -181,13 +186,16 @@ public class Board
 
         grid[toR][toC] = grid[fromR][fromC];
         grid[fromR][fromC] = null;
+        pieceMoved.setAlreadyMoved(true);
+        System.out.println("Déjà bougé (APRÈS) : " + pieceMoved.isAlreadyMoved());
+        System.out.println("-----------------------");
 
         // Promotion pion en dame
-        if (moved instanceof Pion)
+        if (pieceMoved instanceof Pion)
         {
-            if ((moved.getCouleur() && toR == 0) || (!moved.getCouleur() && toR == 7))
+            if ((pieceMoved.getCouleur() && toR == 0) || (!pieceMoved.getCouleur() && toR == 7))
             {
-                grid[toR][toC] = new Reine(moved.getCouleur());
+                grid[toR][toC] = new Reine(pieceMoved.getCouleur());
             }
         }
         return true;

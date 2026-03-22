@@ -1,4 +1,4 @@
-package Model;
+package Model.Piece;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public abstract class Piece
 
     public boolean isAlreadyMoved()
     {
-        return alreadyMoved;
+        return this.alreadyMoved;
     }
 
     public void setAlreadyMoved(boolean etat)
@@ -37,10 +37,6 @@ public abstract class Piece
     /** Symbole unicode affiché dans la vue */
     public abstract String getSymbol();
 
-    /**
-     * Retourne toutes les cases candidates (sans tenir compte de l'échec au roi).
-     * La validation finale (ne pas se mettre en échec) est faite dans Board.
-     */
     public abstract List<int[]> coupsPossibles(int row, int col, Piece[][] board);
 
     /** Raccourci booléen utilisé en interne */

@@ -15,7 +15,7 @@ public class GameState {
 
     private final CellInfo[][] board;
     private final int[] selectedCell;       // null si rien de sélectionné
-    private final List<int[]> legalMoves;   // cases accessibles depuis selectedCell
+    private final List<int[]> legalMoves;   // cases accessibles depuis selectedCell donc selon la pièce
     private final boolean whiteTurn;
     private final String statusMessage;
 
@@ -28,9 +28,24 @@ public class GameState {
         this.statusMessage = statusMessage;
     }
 
-    public CellInfo getCell(int row, int col) { return board[row][col]; }
-    public int[] getSelectedCell()            { return selectedCell; }
-    public List<int[]> getLegalMoves()        { return legalMoves; }
-    public boolean isWhiteTurn()              { return whiteTurn; }
-    public String getStatusMessage()          { return statusMessage; }
+    public CellInfo getCell(int row, int col)
+    {
+        return board[row][col];
+    }
+    public int[] getSelectedCell()
+    {
+        return selectedCell;
+    }
+    public List<int[]> getLegalMoves()
+    {
+        return legalMoves;
+    }
+    public boolean isWhiteTurn()
+    {
+        return whiteTurn;
+    }
+    public String getStatusMessage()
+    {
+        return statusMessage;
+    }
 }

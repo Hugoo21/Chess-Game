@@ -1,4 +1,6 @@
-package Model;
+package Model.DCA;
+
+import Model.Piece.Piece;
 
 import java.util.List;
 
