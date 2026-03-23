@@ -34,12 +34,10 @@ public abstract class Piece
         return nom;
     }
 
-    /** Symbole unicode affiché dans la vue */
     public abstract String getSymbol();
 
     public abstract List<int[]> coupsPossibles(int row, int col, Piece[][] board);
 
-    /** Raccourci booléen utilisé en interne */
     public boolean iscoupvalide(int depRow, int depCol, int arrRow, int arrCol, Piece[][] board)
     {
         return coupsPossibles(depRow, depCol, board).stream().anyMatch(m -> m[0] == arrRow && m[1] == arrCol);
