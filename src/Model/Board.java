@@ -1,12 +1,20 @@
 package Model;
 
+import Model.DCA.MouvementDeBase;
+import Model.DCA.MouvementDePion;
+import Model.Piece.*;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Board
 {
 
     private Piece[][] grid = new Piece[8][8];
+    private int[] dernierCoup = null;
+    private Map<String, Integer> positionsDejaJouees = new HashMap<>();
 
     public Board()
     {
@@ -49,6 +57,48 @@ public class Board
         return grid[row][col];
     }
 
+    private String hashPosition(boolean whiteTurn)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int r = 0; r < 8; r++)
+            for (int c = 0; c < 8; c++)
+            {
+                Piece p = grid[r][c];
+                sb.append(p == null ? "." : p.getSymbol() + p.getCouleur());
+            }
+            sb.append(whiteTurn); // le couleur qui va jouer rentre aussi en compte
+            return sb.toString();
+    }
+
+    public void enregistrerPosition(boolean whiteTurn)
+    {
+        String hash = hashPosition(whiteTurn);
+        positionsDejaJouees.merge(hash, 1, Integer::sum);
+    }
+
+    public boolean isRepetition()
+    {
+        return positionsDejaJouees.values().stream().anyMatch(v -> v >= 3);
+    }
+
+    public boolean isStalemate(boolean couleur)
+    {
+        if (isKingInCheck(couleur))
+        {
+            return false;
+        }
+        for (int r = 0; r < 8; r++)
+            for (int c = 0; c < 8; c++)
+            {
+                Piece p = grid[r][c];
+                if (p != null && p.getCouleur() == couleur && !getCoupsLegaux(r, c).isEmpty())
+                {
+                    return false;
+                }
+            }
+        return true;
+    }
+
     public List<int[]> getCoupsLegaux(int row, int col)
     {
         Piece piece = grid[row][col];
@@ -57,12 +107,12 @@ public class Board
             return List.of();
         }
 
-        List<int[]> candidats = piece.coupsPossibles(row, col, grid);
+        List<int[]> candidats = getCandidats(row, col, piece);
         List<int[]> legaux = new ArrayList<>();
 
         for (int[] mv : candidats)
         {
-            if (!metEnEchec(row, col, mv[0], mv[1], piece.getCouleur()))
+            if (!putInCheck(row, col, mv[0], mv[1], piece.getCouleur()))
             {
                 legaux.add(mv);
             }
@@ -70,7 +120,18 @@ public class Board
         return legaux;
     }
 
-    private boolean metEnEchec(int fromR, int fromC, int toR, int toC, boolean couleur)
+    private List<int[]> getCandidats(int row, int col, Piece piece)
+    {
+        if (piece instanceof Pion)
+        {
+            MouvementDePion pion_mouvement = new MouvementDePion(new MouvementDeBase());
+            pion_mouvement.setDernierCoup(dernierCoup);
+            return pion_mouvement.getCoups(row, col, grid, piece.getCouleur());
+        }
+        return piece.coupsPossibles(row, col, grid);
+    }
+
+    private boolean putInCheck(int fromR, int fromC, int toR, int toC, boolean couleur)
     {
         // Sauvegarde
         Piece moving = grid[fromR][fromC];
@@ -132,6 +193,11 @@ public class Board
 
     public boolean isCheckmate(boolean couleur)
     {
+        if (!isKingInCheck(couleur))
+        {
+            return false;
+        }
+
         for (int r = 0; r < 8; r++)
         {
             for (int c = 0; c < 8; c++)
@@ -143,6 +209,7 @@ public class Board
                 }
             }
         }
+
         return true;
     }
 
@@ -156,9 +223,12 @@ public class Board
         }
 
         // Roque
-        Piece moved = grid[fromR][fromC];
+        Piece pieceMoved = grid[fromR][fromC];
+        System.out.println("--- DÉBUG MOUVEMENT ---");
+        System.out.println("Pièce : " + pieceMoved.getNom());
+        System.out.println("Déjà bougé (AVANT) : " + pieceMoved.isAlreadyMoved());
 
-        if (moved instanceof Roi && Math.abs(toC - fromC) >= 2 )
+        if (pieceMoved instanceof Roi && Math.abs(toC - fromC) >= 2 )
         {
             int colTourDepart;
             int colTourArrivee;
@@ -179,18 +249,67 @@ public class Board
 
         }
 
+        // prise en-passant
+        if (pieceMoved instanceof Pion && Math.abs(toC - fromC) == 1 && grid[toR][toC] == null)
+        {
+            grid[fromR][toC] = null;
+        }
+
         grid[toR][toC] = grid[fromR][fromC];
         grid[fromR][fromC] = null;
+        pieceMoved.setAlreadyMoved(true);
+        System.out.println("Déjà bougé (APRÈS) : " + pieceMoved.isAlreadyMoved());
+        System.out.println("-----------------------");
 
-        // Promotion pion en dame
-        if (moved instanceof Pion)
+        dernierCoup = new int[]{fromR, fromC, toR, toC};
+
+        return true;
+    }
+
+    public boolean canBePromoted()
+    {
+        for (int c = 0; c < 8; c++)
         {
-            if ((moved.getCouleur() && toR == 0) || (!moved.getCouleur() && toR == 7))
+            if (grid[0][c] instanceof Pion && grid[0][c].getCouleur())
             {
-                grid[toR][toC] = new Reine(moved.getCouleur());
+                return true;
+            }
+
+            if (grid[7][c] instanceof Pion && !grid[7][c].getCouleur())
+            {
+                return true;
             }
         }
-        return true;
+        return false;
+    }
+
+    public int[] getPromotionCase()
+    {
+        for (int c = 0; c < 8; c++)
+        {
+            if (grid[0][c] instanceof Pion && grid[0][c].getCouleur())
+            {
+                return new int[]{0, c};
+            }
+
+            if (grid[7][c] instanceof Pion && !grid[7][c].getCouleur())
+            {
+                return new int[]{7, c};
+            }
+        }
+        return null;
+    }
+
+    public void promote(int row, int col, String choice)
+    {
+        boolean white = grid[row][col].getCouleur();
+        grid[row][col] = switch (choice)
+        {
+            case "Tour" -> new Tour(white);
+            case "Fou"      -> new Fou(white);
+            case "Cavalier" -> new Cavalier(white);
+            default         -> new Reine(white);
+        };
     }
 
     public GameState.CellInfo[][] buildSnapshot()

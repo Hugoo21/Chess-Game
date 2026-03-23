@@ -5,6 +5,7 @@ import Model.GameState;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -13,11 +14,11 @@ import java.util.Observer;
 public class MainWindow extends JFrame implements Observer
 {
 
-    private static final Color LIGHT_SQUARE   = new Color(240, 217, 181);
-    private static final Color DARK_SQUARE    = new Color(181, 136,  99);
-    private static final Color SELECTED_COLOR = new Color( 20, 160,  20, 200);
-    private static final Color LEGAL_COLOR    = new Color( 20, 160,  20,  80);
+    private static final Color LIGHT_SQUARE   = new Color(234, 236, 211);
+    private static final Color DARK_SQUARE    = new Color(123, 148,  90);
     private static final Color CHECK_COLOR    = new Color(220,  50,  50, 180);
+
+    private final java.util.Map<String, ImageIcon> iconCache = new java.util.HashMap<>();
 
     private final Game game;
     private final JPanel[][] tab = new JPanel[8][8];
@@ -96,13 +97,14 @@ public class MainWindow extends JFrame implements Observer
                     JLabel label  = pieceLabels[row][col];
 
                     Color bg = baseColor(row, col);
-                    if (selected != null && selected[0] == row && selected[1] == col)
+
+                    if (isLegalMove(legalMoves, row, col))
                     {
-                        bg = SELECTED_COLOR;
+                        square.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
                     }
-                    else if (isLegalMove(legalMoves, row, col))
+                    else
                     {
-                        bg = LEGAL_COLOR;
+                        square.setBorder(null);
                     }
                     square.setBackground(bg);
 
@@ -110,11 +112,12 @@ public class MainWindow extends JFrame implements Observer
                     if (cell == null)
                     {
                         label.setText("");
+                        label.setIcon(null);
                     }
                     else
                     {
-                        label.setText(cell.pieceSymbol);
-                        label.setForeground(cell.isWhite ? Color.WHITE : Color.BLACK);
+                        label.setText("");
+                        label.setIcon(loadIcon(cell.getIconName()));
                     }
                 }
             }
@@ -122,11 +125,29 @@ public class MainWindow extends JFrame implements Observer
             statusLabel.setText("  " + state.getStatusMessage());
             statusLabel.setBackground(state.getStatusMessage().contains("Échec")
                     ? CHECK_COLOR : new Color(50, 50, 50));
+
+            if (state.isCanBePromoted())
+            {
+                displayPromotionWindow();
+            }
         });
     }
 
+    private void displayPromotionWindow()
+    {
+        String[] options = {"Dame", "Tour", "Fou", "Cavalier"};
 
-    private Color baseColor(int row, int col) {
+        String choice = (String) JOptionPane.showInputDialog(this, "Choissisez la pièce",
+                "Promotion", JOptionPane.PLAIN_MESSAGE, null, options, "Dame");
+        if (choice == null)
+        {
+            choice = "Dame"; // choix par défaut, c'est la pièce la plus forte
+        }
+        game.promote(choice);
+    }
+
+    private Color baseColor(int row, int col)
+    {
         if ((row + col) % 2 == 0)
         {
             return LIGHT_SQUARE;
@@ -145,5 +166,22 @@ public class MainWindow extends JFrame implements Observer
         }
 
         return moves.stream().anyMatch(m -> m[0] == row && m[1] == col);
+    }
+
+    private ImageIcon loadIcon(String name)
+    {
+        if (name == null) return null;
+        return iconCache.computeIfAbsent(name, n -> {
+            String path = "src/Icons/" + n + ".png";
+            File file = new File(path);
+            if (!file.exists())
+            {
+                return null;
+            }
+            Image scaled = new ImageIcon(file.getAbsolutePath())
+                    .getImage()
+                    .getScaledInstance(70, 70, Image.SCALE_SMOOTH);
+            return new ImageIcon(scaled);
+        });
     }
 }

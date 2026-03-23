@@ -1,27 +1,19 @@
-package Model;
+package Model.DCA;
 
-import java.util.ArrayList;
+import Model.Piece.Piece;
+
 import java.util.List;
 
-public class Fou extends Piece
-{
+public class MouvementDiagonale extends DecorateurMouvement {
 
-    public Fou(boolean isBlanc)
-    {
-        super(isBlanc, "Fou");
-    }
+    public MouvementDiagonale(CalculateurMouvement m) { super(m); }
 
     @Override
-    public String getSymbol()
-    {
-        return isBlanc ? "♗" : "♝";
-    }
+    public List<int[]> getCoups(int row, int col, Piece[][] board, boolean isBlanc) {
+        List<int[]> coups = super.getCoups(row, col, board, isBlanc);
 
-    @Override
-    public List<int[]> coupsPossibles(int row, int col, Piece[][] board)
-    {
-        List<int[]> moves = new ArrayList<>();
-        int[][] dirs = {{1,1},{1,-1},{-1,1},{-1,-1}};
+        int[][] dirs = {{1,1},{-1,-1},{-1,1},{1,-1}};
+
         for (int[] d : dirs)
         {
             for (int i = 1; i < 8; i++)
@@ -33,18 +25,18 @@ public class Fou extends Piece
                 }
                 if (board[r][c] == null)
                 {
-                    moves.add(new int[]{r, c});
+                    coups.add(new int[]{r, c});
                 }
                 else
                 {
                     if (board[r][c].getCouleur() != isBlanc)
                     {
-                        moves.add(new int[]{r, c});
+                        coups.add(new int[]{r, c});
                     }
                     break;
                 }
             }
         }
-        return moves;
+        return coups;
     }
 }
