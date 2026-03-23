@@ -5,20 +5,25 @@ import Model.DCA.MouvementDeCavalier;
 
 import java.util.List;
 
-public class Cavalier extends Piece {
+public class Cavalier extends Piece
+{
     private CalculateurMouvement calculateur;
 
-    public Cavalier(boolean isBlanc) {
+    public Cavalier(boolean isBlanc)
+    {
         super(isBlanc, "Cavalier");
-        // On insère simplement la cartouche dans la console !
         this.calculateur = new MouvementDeCavalier(new MouvementDeBase());
     }
 
     @Override
-    public String getSymbol() { return isBlanc ? "♘" : "♞"; }
+    public String getSymbol()
+    {
+        return isBlanc ? "♘" : "♞";
+    }
 
     @Override
-    public List<int[]> coupsPossibles(int row, int col, Piece[][] board) {
+    public List<int[]> coupsPossibles(int row, int col, Piece[][] board)
+    {
         return calculateur.getCoups(row, col, board, this.isBlanc);
     }
 }
