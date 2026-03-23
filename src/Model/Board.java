@@ -5,13 +5,16 @@ import Model.DCA.MouvementDePion;
 import Model.Piece.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Board
 {
 
     private Piece[][] grid = new Piece[8][8];
     private int[] dernierCoup = null;
+    private Map<String, Integer> positionsDejaJouees = new HashMap<>();
 
     public Board()
     {
@@ -52,6 +55,48 @@ public class Board
     public Piece getPiece(int row, int col)
     {
         return grid[row][col];
+    }
+
+    private String hashPosition(boolean whiteTurn)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int r = 0; r < 8; r++)
+            for (int c = 0; c < 8; c++)
+            {
+                Piece p = grid[r][c];
+                sb.append(p == null ? "." : p.getSymbol() + p.getCouleur());
+            }
+            sb.append(whiteTurn); // le couleur qui va jouer rentre aussi en compte
+            return sb.toString();
+    }
+
+    public void enregistrerPosition(boolean whiteTurn)
+    {
+        String hash = hashPosition(whiteTurn);
+        positionsDejaJouees.merge(hash, 1, Integer::sum);
+    }
+
+    public boolean isRepetition()
+    {
+        return positionsDejaJouees.values().stream().anyMatch(v -> v >= 3);
+    }
+
+    public boolean isStalemate(boolean couleur)
+    {
+        if (isKingInCheck(couleur))
+        {
+            return false;
+        }
+        for (int r = 0; r < 8; r++)
+            for (int c = 0; c < 8; c++)
+            {
+                Piece p = grid[r][c];
+                if (p != null && p.getCouleur() == couleur && !getCoupsLegaux(r, c).isEmpty())
+                {
+                    return false;
+                }
+            }
+        return true;
     }
 
     public List<int[]> getCoupsLegaux(int row, int col)
@@ -148,6 +193,11 @@ public class Board
 
     public boolean isCheckmate(boolean couleur)
     {
+        if (!isKingInCheck(couleur))
+        {
+            return false;
+        }
+
         for (int r = 0; r < 8; r++)
         {
             for (int c = 0; c < 8; c++)
@@ -211,17 +261,55 @@ public class Board
         System.out.println("Déjà bougé (APRÈS) : " + pieceMoved.isAlreadyMoved());
         System.out.println("-----------------------");
 
-        // Promotion pion en dame
-        if (pieceMoved instanceof Pion)
-        {
-            if ((pieceMoved.getCouleur() && toR == 0) || (!pieceMoved.getCouleur() && toR == 7))
-            {
-                grid[toR][toC] = new Reine(pieceMoved.getCouleur());
-            }
-        }
         dernierCoup = new int[]{fromR, fromC, toR, toC};
 
         return true;
+    }
+
+    public boolean canBePromoted()
+    {
+        for (int c = 0; c < 8; c++)
+        {
+            if (grid[0][c] instanceof Pion && grid[0][c].getCouleur())
+            {
+                return true;
+            }
+
+            if (grid[7][c] instanceof Pion && !grid[7][c].getCouleur())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int[] getPromotionCase()
+    {
+        for (int c = 0; c < 8; c++)
+        {
+            if (grid[0][c] instanceof Pion && grid[0][c].getCouleur())
+            {
+                return new int[]{0, c};
+            }
+
+            if (grid[7][c] instanceof Pion && !grid[7][c].getCouleur())
+            {
+                return new int[]{7, c};
+            }
+        }
+        return null;
+    }
+
+    public void promote(int row, int col, String choice)
+    {
+        boolean white = grid[row][col].getCouleur();
+        grid[row][col] = switch (choice)
+        {
+            case "Tour" -> new Tour(white);
+            case "Fou"      -> new Fou(white);
+            case "Cavalier" -> new Cavalier(white);
+            default         -> new Reine(white);
+        };
     }
 
     public GameState.CellInfo[][] buildSnapshot()

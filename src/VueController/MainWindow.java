@@ -125,11 +125,29 @@ public class MainWindow extends JFrame implements Observer
             statusLabel.setText("  " + state.getStatusMessage());
             statusLabel.setBackground(state.getStatusMessage().contains("Échec")
                     ? CHECK_COLOR : new Color(50, 50, 50));
+
+            if (state.isCanBePromoted())
+            {
+                displayPromotionWindow();
+            }
         });
     }
 
+    private void displayPromotionWindow()
+    {
+        String[] options = {"Dame", "Tour", "Fou", "Cavalier"};
 
-    private Color baseColor(int row, int col) {
+        String choice = (String) JOptionPane.showInputDialog(this, "Choissisez la pièce",
+                "Promotion", JOptionPane.PLAIN_MESSAGE, null, options, "Dame");
+        if (choice == null)
+        {
+            choice = "Dame"; // choix par défaut, c'est la pièce la plus forte
+        }
+        game.promote(choice);
+    }
+
+    private Color baseColor(int row, int col)
+    {
         if ((row + col) % 2 == 0)
         {
             return LIGHT_SQUARE;
@@ -150,12 +168,16 @@ public class MainWindow extends JFrame implements Observer
         return moves.stream().anyMatch(m -> m[0] == row && m[1] == col);
     }
 
-    private ImageIcon loadIcon(String name) {
+    private ImageIcon loadIcon(String name)
+    {
         if (name == null) return null;
         return iconCache.computeIfAbsent(name, n -> {
             String path = "src/Icons/" + n + ".png";
             File file = new File(path);
-            if (!file.exists()) return null;
+            if (!file.exists())
+            {
+                return null;
+            }
             Image scaled = new ImageIcon(file.getAbsolutePath())
                     .getImage()
                     .getScaledInstance(70, 70, Image.SCALE_SMOOTH);

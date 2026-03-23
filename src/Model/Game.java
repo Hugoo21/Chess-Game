@@ -12,9 +12,20 @@ public class Game extends Observable
     private final Board board = new Board();
     private int[] selectedCell = null;
     private boolean whiteTurn = true;
+    private boolean partieTerminee = false;
 
     public void leftClick(int row, int col)
     {
+        if (partieTerminee)
+        {
+            return;
+        }
+
+        if (board.canBePromoted()) // on ne peut pas jouer un coup tant que le joueur n'a pas choisi sa promotion
+        {
+            return;
+        }
+
         Piece clicked = board.getPiece(row, col);
 
         if (selectedCell == null)
@@ -44,6 +55,7 @@ public class Game extends Observable
                 if (moved)
                 {
                     whiteTurn = !whiteTurn;
+                    board.enregistrerPosition(whiteTurn);
                     selectedCell = null;
                 }
                 else
@@ -53,6 +65,17 @@ public class Game extends Observable
             }
         }
 
+        publish();
+    }
+
+    public void promote(String choice)
+    {
+        int[] c = board.getPromotionCase();
+        if (c == null)
+        {
+            return;
+        }
+        board.promote(c[0], c[1], choice);
         publish();
     }
 
@@ -69,7 +92,9 @@ public class Game extends Observable
                 selectedCell,
                 legalMoves,
                 whiteTurn,
-                status
+                status,
+                board.canBePromoted(),
+                board.getPromotionCase()
         );
 
         synchronized (this)
@@ -83,8 +108,22 @@ public class Game extends Observable
     {
         if (board.isCheckmate(whiteTurn))
         {
+            partieTerminee = true;
             return (whiteTurn ? "Noirs" : "Blancs") + " gagnent ! Échec et mat.";
         }
+
+        if (board.isRepetition())
+        {
+            partieTerminee = true;
+            return "Nul par répétition";
+        }
+
+        if (board.isStalemate(whiteTurn))
+        {
+            partieTerminee = true;
+            return "Nul par pat";
+        }
+
         if (board.isKingInCheck(whiteTurn))
         {
             return (whiteTurn ? "Blancs" : "Noirs") + " : Échec au roi !";
@@ -95,6 +134,7 @@ public class Game extends Observable
     /** Appelé au démarrage pour afficher l'état initial */
     public void init()
     {
+        board.enregistrerPosition(whiteTurn);
         publish();
     }
 }

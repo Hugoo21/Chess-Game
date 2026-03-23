@@ -4,11 +4,11 @@ import java.util.List;
 
 public class GameState
 {
-
     public static class CellInfo
     {
         public final String pieceSymbol;
         public final boolean isWhite;
+
         public CellInfo(String symbol, boolean isWhite)
         {
             this.pieceSymbol = symbol;
@@ -46,14 +46,30 @@ public class GameState
     private final boolean whiteTurn;
     private final String statusMessage;
 
+    private final boolean canBePromoted;
+    private final int[] promotionCase;
+
+
     public GameState(CellInfo[][] board, int[] selectedCell,
-                     List<int[]> legalMoves, boolean whiteTurn, String statusMessage)
+                     List<int[]> legalMoves, boolean whiteTurn, String statusMessage, boolean canBePromoted, int[] promotionCase)
     {
         this.board = board;
         this.selectedCell = selectedCell;
         this.legalMoves = legalMoves;
         this.whiteTurn = whiteTurn;
         this.statusMessage = statusMessage;
+        this.canBePromoted = canBePromoted;
+        this.promotionCase = promotionCase;
+    }
+
+    public boolean isCanBePromoted()
+    {
+        return canBePromoted;
+    }
+
+    public int[] getPromotionCase()
+    {
+        return promotionCase;
     }
 
     public CellInfo getCell(int row, int col)
