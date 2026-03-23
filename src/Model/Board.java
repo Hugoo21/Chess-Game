@@ -1,5 +1,7 @@
 package Model;
 
+import Model.DCA.MouvementDeBase;
+import Model.DCA.MouvementDePion;
 import Model.Piece.*;
 
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ public class Board
 {
 
     private Piece[][] grid = new Piece[8][8];
+    private int[] dernierCoup = null;
 
     public Board()
     {
@@ -59,7 +62,7 @@ public class Board
             return List.of();
         }
 
-        List<int[]> candidats = piece.coupsPossibles(row, col, grid);
+        List<int[]> candidats = getCandidats(row, col, piece);
         List<int[]> legaux = new ArrayList<>();
 
         for (int[] mv : candidats)
@@ -70,6 +73,17 @@ public class Board
             }
         }
         return legaux;
+    }
+
+    private List<int[]> getCandidats(int row, int col, Piece piece)
+    {
+        if (piece instanceof Pion)
+        {
+            MouvementDePion pion_mouvement = new MouvementDePion(new MouvementDeBase());
+            pion_mouvement.setDernierCoup(dernierCoup);
+            return pion_mouvement.getCoups(row, col, grid, piece.getCouleur());
+        }
+        return piece.coupsPossibles(row, col, grid);
     }
 
     private boolean putInCheck(int fromR, int fromC, int toR, int toC, boolean couleur)
@@ -145,6 +159,7 @@ public class Board
                 }
             }
         }
+
         return true;
     }
 
@@ -184,6 +199,12 @@ public class Board
 
         }
 
+        // prise en-passant
+        if (pieceMoved instanceof Pion && Math.abs(toC - fromC) == 1 && grid[toR][toC] == null)
+        {
+            grid[fromR][toC] = null;
+        }
+
         grid[toR][toC] = grid[fromR][fromC];
         grid[fromR][fromC] = null;
         pieceMoved.setAlreadyMoved(true);
@@ -198,6 +219,8 @@ public class Board
                 grid[toR][toC] = new Reine(pieceMoved.getCouleur());
             }
         }
+        dernierCoup = new int[]{fromR, fromC, toR, toC};
+
         return true;
     }
 
