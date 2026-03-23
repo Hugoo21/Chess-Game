@@ -6,7 +6,8 @@ import Model.Piece.Tour;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MouvementDeRoi extends DecorateurMouvement{
+public class MouvementDeRoi extends DecorateurMouvement
+{
     public MouvementDeRoi(CalculateurMouvement m)
     {
         super(m);

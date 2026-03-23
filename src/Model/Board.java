@@ -59,21 +59,28 @@ public class Board
 
     private String hashPosition(boolean whiteTurn)
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(); // plus optimisé qu'une string niveau mémoire : on crée une seule string modifiable (là où une String classique créerait de nouveaux objets à chaque modification)
         for (int r = 0; r < 8; r++)
             for (int c = 0; c < 8; c++)
             {
                 Piece p = grid[r][c];
                 sb.append(p == null ? "." : p.getSymbol() + p.getCouleur());
             }
-            sb.append(whiteTurn); // le couleur qui va jouer rentre aussi en compte
+            sb.append(whiteTurn); // le couleur du joueur qui doit jouer rentre aussi en compte
             return sb.toString();
     }
 
     public void enregistrerPosition(boolean whiteTurn)
     {
         String hash = hashPosition(whiteTurn);
-        positionsDejaJouees.merge(hash, 1, Integer::sum);
+        if (positionsDejaJouees.containsKey(hash))
+        {
+            positionsDejaJouees.put(hash, positionsDejaJouees.get(hash) + 1);
+        }
+        else
+        {
+            positionsDejaJouees.put(hash, 1);
+        }
     }
 
     public boolean isRepetition()
@@ -306,9 +313,9 @@ public class Board
         grid[row][col] = switch (choice)
         {
             case "Tour" -> new Tour(white);
-            case "Fou"      -> new Fou(white);
+            case "Fou" -> new Fou(white);
             case "Cavalier" -> new Cavalier(white);
-            default         -> new Reine(white);
+            default -> new Reine(white);
         };
     }
 

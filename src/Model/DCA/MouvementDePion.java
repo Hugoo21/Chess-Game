@@ -28,19 +28,16 @@ public class MouvementDePion extends DecorateurMouvement
         int dir = isBlanc ? -1 : 1;
         int startRow = isBlanc ? 6 : 1;
 
-        // Avance d'une case
         int nextRow = row + dir;
-            if (inBounds(nextRow, col) && board[nextRow][col] == null)
+        if (inBounds(nextRow, col) && board[nextRow][col] == null)
         {
             moves.add(new int[]{nextRow, col});
-            // Avance de deux cases depuis la position initiale
             if (row == startRow && board[row + 2 * dir][col] == null)
             {
                 moves.add(new int[]{row + 2 * dir, col});
             }
         }
 
-        // Captures diagonales
             for (int dc : new int[]{-1, 1})
             {
                 int nc = col + dc;

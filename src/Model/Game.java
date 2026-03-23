@@ -30,7 +30,7 @@ public class Game extends Observable
 
         if (selectedCell == null)
         {
-            // Sélectionner une pièce du bon camp
+            // Sélectionner une pièce de la bonne couleur
             if (clicked != null && clicked.getCouleur() == whiteTurn)
             {
                 selectedCell = new int[]{row, col};
@@ -81,9 +81,16 @@ public class Game extends Observable
 
     private void publish()
     {
-        List<int[]> legalMoves = (selectedCell == null)
-                ? List.of()
-                : board.getCoupsLegaux(selectedCell[0], selectedCell[1]);
+        List<int[]> legalMoves;
+
+        if (selectedCell == null)
+        {
+            legalMoves = List.of();
+        }
+        else
+        {
+            legalMoves = board.getCoupsLegaux(selectedCell[0], selectedCell[1]);
+        }
 
         String status = buildStatus();
 
@@ -131,7 +138,7 @@ public class Game extends Observable
         return (whiteTurn ? "Blancs" : "Noirs") + " jouent.";
     }
 
-    /** Appelé au démarrage pour afficher l'état initial */
+    // appelée au démarrage
     public void init()
     {
         board.enregistrerPosition(whiteTurn);
